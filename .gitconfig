@@ -1,0 +1,10 @@
+[include]
+  path = ~/.custom_gitconfig
+[duet "env"]
+	git-author-initials = mjh
+	git-author-name = Mark James Hender
+	git-author-email = mhender@pivotal.io
+	mtime = 1501622714
+	git-committer-initials = 
+	git-committer-name = 
+	git-committer-email = 
