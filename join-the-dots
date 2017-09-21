@@ -1,0 +1,226 @@
+#!/bin/bash
+set -eu
+
+HOMEBREW_FILES=("/usr/local" "/Library/Caches/Homebrew" "/usr/local/lib/node_modules/livedown")
+SKIP_PULL_HOME=${SKIP_PULL_HOME:-0}
+
+main() {
+  pull_latest_version_homedir
+  ensure_brew_exists
+  update_brew_things
+  setup_ruby
+  setup_bash_it
+  update_luanvim
+  setup_intelligo
+  update_tmux_plugins
+  ensure_git_config_set
+  setup_gcloud
+  update_go_tools
+  setup_yq
+  # setup-haskell
+  setup_python
+  setup_node
+}
+
+bump_homebrew_group_permissions() {
+  sudo chgrp -R admin "${HOMEBREW_FILES[@]}"
+  sudo chmod -R g+w "${HOMEBREW_FILES[@]}"
+}
+
+create_backup_with_previous_permissions() {
+  local homebrew_permissions_before_update
+  homebrew_permissions_before_update="$(gmktemp -t homebrew_permissions_before_update.XXXXXX.txt)"
+  ls -lhR "${HOMEBREW_FILES[@]}" > "$homebrew_permissions_before_update"
+  echo "A backup file with previous permissions has been created at $homebrew_permissions_before_update"
+}
+
+print_usage() {
+  echo "Usage: "
+}
+
+pull_latest_version_homedir() {
+  (cd "$HOME/workspace/my-setup" && git stash && git pull -r && (git stash pop || true))
+  SKIP_PULL_HOME=1 exec "$0"
+}
+
+ensure_brew_exists() {
+  echo "Ensuring brew exists..."
+  if [[ ! -x /usr/local/bin/brew ]] ; then
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  fi
+}
+
+update_brew_things() {
+  echo "Updating brew things..."
+  brew tap Homebrew/bundle
+  brew update
+  brew upgrade
+  (cd && brew bundle -v)
+}
+
+setup_ruby() {
+    echo "Setting up ruby..."
+
+    # chruby contains unbound variables
+    set +u
+    # shellcheck disable=1091
+    source /usr/local/share/chruby/chruby.sh
+
+    if chruby "$(cat "${HOME}/.ruby-version")" > /dev/null 2>&1; then
+        echo "$(cat "${HOME}/.ruby-version") already installed..."
+    else
+        echo "will install $(cat "${HOME}/.ruby-version")..."
+        ruby-install "$(cat ~/.ruby-version)"
+	chruby "$(cat "${HOME}/.ruby-version")" > /dev/null 2>&1;
+    fi
+    set -u
+    gem install bundler gem-ctags
+
+    gem ctags
+}
+
+setup_bash_it() {
+    echo "Setting up bash-it..."
+    if [ -d "${HOME}/.bash_it" ]; then
+        (cd "${HOME}/.bash_it" && git pull)
+    else
+        git clone https://github.com/Bash-it/bash-it.git "${HOME}/.bash_it"
+    fi
+
+    "${HOME}/.bash_it/install.sh" --silent
+    mv ~/.bash_profile.bak ~/.bash_profile
+    ln -F -s ~/bin/git_prompt_info ~/.bash_it/custom/git_prompt_info.bash
+
+    set +eu
+    # shellcheck disable=1090
+    source "${HOME}/.bash_it/bash_it.sh"
+    (
+        cd "${HOME}/.bash_it"
+        for plugin in git git-subrepo; do bash-it enable plugin $plugin; done
+        for completion in awscli brew docker docker-machine git ssh vagrant; do
+            bash-it enable completion $completion
+        done)
+    set -eu
+}
+
+update_luanvim() {
+  echo "Ensuring that we have neovim python plugins"
+  pip3 install --upgrade neovim
+  pip3 install --upgrade neovim
+  gem install neovim
+  echo "Updating luanvim..."
+  if [[ ! -d "${HOME}/.vim" ]] ; then
+    git clone https://github.com/luan/vimfiles.git ~/.vim
+  fi
+  (
+    cd "${HOME}/.vim"
+    git checkout master
+    git pull -r
+    ./update
+  )
+}
+
+setup_intelligo() {
+  local tmpdir image_file mount_point application_file_name application_file
+  mount_point="/Volumes/Gogland 1.0 EAP"
+  application_file_name="Gogland 1.0 EAP.app"
+  application_file="${mount_point}/${application_file_name}"
+
+  if [[ ! -d "/Applications/${application_file_name}" ]] ; then
+    echo "Setting up Intelligo -- Build: 1.0 EAP 163.12024.32 from Feb 13"
+
+    tmpdir=$(mktemp -d)
+    image_file="$tmpdir/gogland.dmg"
+
+    curl -L -o "$image_file" "https://download.jetbrains.com/go/gogland-163.12024.32.dmg"
+    hdiutil mount "$image_file"
+
+    cp -R "${application_file}" /Applications/
+
+    hdiutil eject "${mount_point}"
+    rm "${image_file}"
+    rmdir "${tmpdir}"
+  fi
+}
+
+update_tmux_plugins() {
+  echo "Updating tmux plugins..."
+  if [[ ! -d "${HOME}/.tmux/plugins/tpm" ]] ; then
+    mkdir -p "${HOME}/.tmux/plugins"
+    git clone https://github.com/tmux-plugins/tpm "${HOME}/.tmux/plugins/tpm"
+  else
+    (cd "${HOME}/.tmux/plugins/tpm" ; git pull )
+    "$HOME"/.tmux/plugins/tpm/bin/update_plugins all
+  fi
+}
+
+ensure_git_config_set() {
+  echo "Ensuring git configs are set up..."
+  local gitconfig
+
+  if [[ ! -f "${HOME}/.gitconfig" ]] ; then
+    write_git_config_header
+  fi
+
+  if [[ $(head -n2 "${HOME}/.gitconfig") != "[include]
+  path = ${HOME}/.gitconfig-shared" ]] ; then
+    gitconfig=$(cat "${HOME}/.gitconfig")
+    write_git_config_header
+    echo "${gitconfig}" >> "${HOME}/.gitconfig"
+  fi
+}
+
+write_git_config_header() {
+    echo "[include]" > "${HOME}/.gitconfig"
+    echo "  path = ${HOME}/.gitconfig-shared" >> "${HOME}/.gitconfig"
+}
+
+setup_gcloud() {
+    if [[ ! -d "${HOME}/google-cloud-sdk" ]] ; then
+        curl https://sdk.cloud.google.com | bash
+    fi
+    #TODO: Add else case that performs check/upgrade
+}
+
+update_go_tools() {
+    echo "Installing go tools..."
+    for tool in \
+      "github.com/rogpeppe/godef" \
+        "github.com/alecthomas/gometalinter" \
+        "golang.org/x/tools/cmd/gorename" \
+        "golang.org/x/tools/cmd/goimports" \
+        "github.com/tools/godep" \
+        "github.com/maxbrunsfeld/counterfeiter" \
+        "github.com/nsf/gocode" \
+        "github.com/onsi/gomega" \
+        "github.com/onsi/ginkgo" \
+        "github.com/onsi/ginkgo/ginkgo" \
+        "github.com/golang/dep/cmd/dep"
+    do
+        go get -u -v "$tool"
+    done
+
+    gometalinter --install
+}
+
+setup_yq() {
+  pip3 install pyYAML
+  pip3 install yq
+
+  # Force deletion of old yq (the one from a ramdom gist :|)
+  if [[ -e "$HOME/bin/yq" ]] ; then
+    rm "$HOME/bin/yq"
+  fi
+}
+
+setup_python() {
+  pip3 install fabric3
+  pip3 install terminaltables
+}
+
+setup_node() {
+  npm install -g npm
+  npm install -g "$HOME/node/make-trigger"
+}
+
+main "$@"
