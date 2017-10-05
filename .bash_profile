@@ -1,36 +1,38 @@
 #!/usr/bin/env bash
 
-export BASH_IT="${HOME}/.bash_it"
+# Path to the bash it configuration
+export BASH_IT="/Users/henderjm/.bash_it"
+
+# Lock and Load a custom theme file
+# location /.bash_it/themes/
 export BASH_IT_THEME='bobby'
-export SCM_CHECK=true
+
+# (Advanced): Change this to the name of your remote repo if you
+# cloned bash-it with a remote other than origin such as `bash-it`.
+# export BASH_IT_REMOTE='bash-it'
+
+# Your place for hosting Git repos. I use this for private repos.
+export GIT_HOSTING='git@git.domain.com'
+
+# Don't check mail when opening terminal.
 unset MAILCHECK
+
+# Change this to your console based IRC client of choice.
+export IRC_CLIENT='irssi'
+
+# Set this to the command you use for todo.txt-cli
+export TODO="t"
+
+# Set this to false to turn off version control status checking within the prompt for all themes
 export SCM_CHECK=true
-source "$BASH_IT/bash_it.sh"
 
-export EDITOR=vim
-[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+# Set vcprompt executable path for scm advance info in prompt (demula theme)
+# https://github.com/djl/vcprompt
+#export VCPROMPT_EXECUTABLE=~/.vcprompt/bin/vcprompt
 
-export GIT_DUET_GLOBAL=true
-export GIT_DUET_ROTATE_AUTHOR=1
-export LPASS_AGENT_TIMEOUT=$((9 * 3600))
-export VM_MEMORY=$((10 * 1024))
+# (Advanced): Uncomment this to make Bash-it reload itself automatically
+# after enabling or disabling aliases, plugins, and completions.
+# export BASH_IT_AUTOMATIC_RELOAD_AFTER_CONFIG_CHANGE=1
 
-# Ruby
-
-# Go
-export GOPATH=~/go
-export PATH=$GOPATH/bin:$PATH
-
-export PATH="${HOME}/.local/bin:${PATH}"
-export PATH="${HOME}/bin:${PATH}"
-export PATH="${HOME}/.local/bin:${PATH}"
-
-alias z='fasd_cd -d'
-alias gsu='git submodule update --init --recursive'
-
-eval "$(direnv hook bash)"
-export PATH="/usr/local/opt/qt@5.5/bin:$PATH"
-
-# Enable tab completion for custom commands
-source "${HOME}/bin/_go_jump.bash"
-source "${HOME}/bin/_autocomplete_cmds.bash"
+# Load Bash It
+source $BASH_IT/bash_it.sh

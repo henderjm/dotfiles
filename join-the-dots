@@ -1,25 +1,28 @@
 #!/bin/bash
 set -eu
 
-HOMEBREW_FILES=("/usr/local" "/Library/Caches/Homebrew" "/usr/local/lib/node_modules/livedown")
-SKIP_PULL_HOME=${SKIP_PULL_HOME:-0}
+HOMEBREW_FILES=("/usr/local" "/Library/Caches/Homebrew")
+DIR="$(cd "$( dirname "$0" )" && pwd )"
+
+echo "$DIR"
+
+# if [ ! -z "$DEBUG" ]; then
+#   set -x
+# fi
 
 main() {
-  pull_latest_version_homedir
+  link_dot_files
   ensure_brew_exists
   update_brew_things
   setup_ruby
   setup_bash_it
+  setup_python
   update_luanvim
-  setup_intelligo
   update_tmux_plugins
   ensure_git_config_set
   setup_gcloud
   update_go_tools
   setup_yq
-  # setup-haskell
-  setup_python
-  setup_node
 }
 
 bump_homebrew_group_permissions() {
@@ -38,9 +41,15 @@ print_usage() {
   echo "Usage: "
 }
 
-pull_latest_version_homedir() {
-  (cd "$HOME/workspace/my-setup" && git stash && git pull -r && (git stash pop || true))
-  SKIP_PULL_HOME=1 exec "$0"
+link_dot_files() {
+  echo "Linking dot files from setup repo..."
+
+  ln -Fsv ~/workspace/my-setup/.ctags "$HOME/.ctags"
+  ln -Fsv ~/workspace/my-setup/.mrconfig "$HOME/.mrconfig"
+  ln -Fsv ~/workspace/my-setup/.bashrc "$HOME/.bashrc"
+  ln -Fsv ~/workspace/my-setup/.bash_profile "$HOME/.bash_profile"
+  ln -Fsv ~/workspace/my-setup/Brewfile "$HOME/Brewfile"
+
 }
 
 ensure_brew_exists() {
@@ -81,30 +90,35 @@ setup_ruby() {
 
 setup_bash_it() {
     echo "Setting up bash-it..."
-    if [ -d "${HOME}/.bash_it" ]; then
-        (cd "${HOME}/.bash_it" && git pull)
-    else
-        git clone https://github.com/Bash-it/bash-it.git "${HOME}/.bash_it"
+    if [ ! -d "${HOME}/.bash_it" ]; then
+      git clone https://github.com/Bash-it/bash-it.git "${HOME}/.bash_it"
     fi
 
     "${HOME}/.bash_it/install.sh" --silent
-    mv ~/.bash_profile.bak ~/.bash_profile
-    ln -F -s ~/bin/git_prompt_info ~/.bash_it/custom/git_prompt_info.bash
+    # mv ~/.bash_profile.bak ~/.bash_profile
+    # ln -F -s ~/bin/git_prompt_info ~/.bash_it/custom/git_prompt_info.bash
 
     set +eu
     # shellcheck disable=1090
     source "${HOME}/.bash_it/bash_it.sh"
-    (
-        cd "${HOME}/.bash_it"
-        for plugin in git git-subrepo; do bash-it enable plugin $plugin; done
-        for completion in awscli brew docker docker-machine git ssh vagrant; do
-            bash-it enable completion $completion
-        done)
+
+    # Enable bash-it aliases
+    aliases=(git general tmux homebrew)
+    for a in "${aliases[@]}"; do
+      bash-it enable alias "$a"
+    done
+
+    # Enable bash-it completions
+    completions=(brew docker docker-machine git)
+    for c in "${completions[@]}"; do
+      bash-it enable completion "$c"
+    done
     set -eu
 }
 
 update_luanvim() {
   echo "Ensuring that we have neovim python plugins"
+  unset PYTHONPATH
   pip3 install --upgrade neovim
   pip3 install --upgrade neovim
   gem install neovim
@@ -120,29 +134,6 @@ update_luanvim() {
   )
 }
 
-setup_intelligo() {
-  local tmpdir image_file mount_point application_file_name application_file
-  mount_point="/Volumes/Gogland 1.0 EAP"
-  application_file_name="Gogland 1.0 EAP.app"
-  application_file="${mount_point}/${application_file_name}"
-
-  if [[ ! -d "/Applications/${application_file_name}" ]] ; then
-    echo "Setting up Intelligo -- Build: 1.0 EAP 163.12024.32 from Feb 13"
-
-    tmpdir=$(mktemp -d)
-    image_file="$tmpdir/gogland.dmg"
-
-    curl -L -o "$image_file" "https://download.jetbrains.com/go/gogland-163.12024.32.dmg"
-    hdiutil mount "$image_file"
-
-    cp -R "${application_file}" /Applications/
-
-    hdiutil eject "${mount_point}"
-    rm "${image_file}"
-    rmdir "${tmpdir}"
-  fi
-}
-
 update_tmux_plugins() {
   echo "Updating tmux plugins..."
   if [[ ! -d "${HOME}/.tmux/plugins/tpm" ]] ; then
@@ -156,23 +147,14 @@ update_tmux_plugins() {
 
 ensure_git_config_set() {
   echo "Ensuring git configs are set up..."
-  local gitconfig
 
-  if [[ ! -f "${HOME}/.gitconfig" ]] ; then
-    write_git_config_header
+  if [ ! -f "$HOME/.gitconfig" ]; then
+    cat "${DIR}/.gitconfig" > "$HOME/.gitconfig"
   fi
 
-  if [[ $(head -n2 "${HOME}/.gitconfig") != "[include]
-  path = ${HOME}/.gitconfig-shared" ]] ; then
-    gitconfig=$(cat "${HOME}/.gitconfig")
-    write_git_config_header
-    echo "${gitconfig}" >> "${HOME}/.gitconfig"
+  if [ ! -f "$HOME/.gitconfig_custom" ]; then
+    cat "${DIR}/.custom_gitconfig" > "$HOME/.custom_gitconfig"
   fi
-}
-
-write_git_config_header() {
-    echo "[include]" > "${HOME}/.gitconfig"
-    echo "  path = ${HOME}/.gitconfig-shared" >> "${HOME}/.gitconfig"
 }
 
 setup_gcloud() {
@@ -214,13 +196,10 @@ setup_yq() {
 }
 
 setup_python() {
+  echo "Install python2 and python3..."
+  unset PYTHONPATH
   pip3 install fabric3
   pip3 install terminaltables
-}
-
-setup_node() {
-  npm install -g npm
-  npm install -g "$HOME/node/make-trigger"
 }
 
 main "$@"
