@@ -12,6 +12,7 @@ echo "$DIR"
 
 main() {
   link_dot_files
+  copy_scripts
   ensure_brew_exists
   update_brew_things
   setup_ruby
@@ -44,12 +45,16 @@ print_usage() {
 link_dot_files() {
   echo "Linking dot files from setup repo..."
 
-  ln -Fsv ~/workspace/my-setup/.ctags "$HOME/.ctags"
-  ln -Fsv ~/workspace/my-setup/.mrconfig "$HOME/.mrconfig"
-  ln -Fsv ~/workspace/my-setup/.bashrc "$HOME/.bashrc"
-  ln -Fsv ~/workspace/my-setup/.bash_profile "$HOME/.bash_profile"
-  ln -Fsv ~/workspace/my-setup/Brewfile "$HOME/Brewfile"
+  ln -Fsv "${DIR}"/.ctags "$HOME/.ctags"
+  ln -Fsv "${DIR}"/.mrconfig "$HOME/.mrconfig"
+  ln -Fsv "${DIR}"/.bashrc "$HOME/.bashrc"
+  ln -Fsv "${DIR}"/.bash_profile "$HOME/.bash_profile"
+  ln -Fsv "${DIR}"/Brewfile "$HOME/Brewfile"
 
+}
+
+copy_scripts() {
+  cp "${DIR}/diff-so-fancy" /usr/local/bin
 }
 
 ensure_brew_exists() {
@@ -147,14 +152,22 @@ update_tmux_plugins() {
 
 ensure_git_config_set() {
   echo "Ensuring git configs are set up..."
+  cp "${DIR}/.gitconfig" "$HOME/.gitconfig" 2>/dev/null
+  cp "${DIR}/.custom_gitconfig" "$HOME/.custom_gitconfig" 2>/dev/null
 
-  if [ ! -f "$HOME/.gitconfig" ]; then
-    cat "${DIR}/.gitconfig" > "$HOME/.gitconfig"
-  fi
+  git config --global color.ui true
 
-  if [ ! -f "$HOME/.gitconfig_custom" ]; then
-    cat "${DIR}/.custom_gitconfig" > "$HOME/.custom_gitconfig"
-  fi
+  git config --global color.diff-highlight.oldNormal "red bold"
+  git config --global color.diff-highlight.oldHighlight "red bold 52"
+  git config --global color.diff-highlight.newNormal "green bold"
+  git config --global color.diff-highlight.newHighlight "green bold 22"
+
+  git config --global color.diff.meta "227"
+  git config --global color.diff.frag "magenta bold"
+  git config --global color.diff.commit "227 bold"
+  git config --global color.diff.old "red bold"
+  git config --global color.diff.new "green bold"
+  git config --global color.diff.whitespace "red reverse"
 }
 
 setup_gcloud() {
