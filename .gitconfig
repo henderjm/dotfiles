@@ -1,13 +1,5 @@
 [include]
   path = ~/.custom_gitconfig
-[duet "env"]
-	git-author-initials = mjh
-	git-author-name = Mark Hender
-	git-author-email = mhender@pivotal.io
-	mtime = 1508158203
-	git-committer-initials = 
-	git-committer-name = 
-	git-committer-email = 
 [core]
 	pager = diff-so-fancy | less --tabs=4 -RFX
 [color]

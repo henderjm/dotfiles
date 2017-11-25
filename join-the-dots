@@ -11,12 +11,12 @@ echo "$DIR"
 # fi
 
 main() {
-  link_dot_files
+  #link_dot_files
   copy_scripts
   ensure_brew_exists
   update_brew_things
-  setup_ruby
   setup_bash_it
+  setup_ruby
   setup_python
   update_luanvim
   update_tmux_plugins
@@ -75,22 +75,10 @@ update_brew_things() {
 setup_ruby() {
     echo "Setting up ruby..."
 
-    # chruby contains unbound variables
-    set +u
-    # shellcheck disable=1091
-    source /usr/local/share/chruby/chruby.sh
-
-    if chruby "$(cat "${HOME}/.ruby-version")" > /dev/null 2>&1; then
-        echo "$(cat "${HOME}/.ruby-version") already installed..."
-    else
-        echo "will install $(cat "${HOME}/.ruby-version")..."
-        ruby-install "$(cat ~/.ruby-version)"
-	chruby "$(cat "${HOME}/.ruby-version")" > /dev/null 2>&1;
+    if ! rbenv versions | grep -q 2.4.1; then
+      rbenv install 2.4.1
     fi
-    set -u
-    gem install bundler gem-ctags
-
-    gem ctags
+    rbenv global 2.4.1
 }
 
 setup_bash_it() {
