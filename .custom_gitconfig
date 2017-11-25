@@ -5,8 +5,7 @@
   st = status
   di = diff
   co = checkout
-  ci = duet-commit --verbose
-  dca = duet-commit --amend --reset-author --verbose
+  ci = commit --verbose
   br = branch
   sta = stash
   llog = log --date=local
