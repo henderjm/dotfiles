@@ -51,5 +51,8 @@ eval "$(rbenv init -)"
 # after enabling or disabling aliases, plugins, and completions.
 # export BASH_IT_AUTOMATIC_RELOAD_AFTER_CONFIG_CHANGE=1
 
+# Setup paths
+export PATH=$HOME/bin:$PATH
+
 # Load Bash It
 source "$BASH_IT"/bash_it.sh
