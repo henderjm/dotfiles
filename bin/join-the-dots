@@ -1,14 +1,14 @@
 #!/bin/bash
-set -eu
-
-HOMEBREW_FILES=("/usr/local" "/Library/Caches/Homebrew")
-DIR="$(cd "$( dirname "$0" )" && pwd )"
-
-echo "$DIR"
 
 if [ ! -z "$DEBUG" ]; then
   set -x
 fi
+
+set -eu
+HOMEBREW_FILES=("/usr/local" "/Library/Caches/Homebrew")
+DIR="$(cd "$( dirname "$0" )" && pwd )"
+
+echo "$DIR"
 
 main() {
   copy_scripts
@@ -42,7 +42,7 @@ print_usage() {
 }
 
 copy_scripts() {
-  if [ ! -d "${DIR}/diff-so-fancy" ]; then
+  if [ ! -f "/usr/local/bin/diff-so-fancy" ]; then
     cp "${DIR}/diff-so-fancy" /usr/local/bin
   fi
 }
@@ -79,7 +79,7 @@ setup_bash_it() {
     fi
 
     "${HOME}/.bash_it/install.sh" --silent
-    # mv ~/.bash_profile.bak ~/.bash_profile
+    mv ~/.bash_profile.bak ~/.bash_profile
     # ln -F -s ~/bin/git_prompt_info ~/.bash_it/custom/git_prompt_info.bash
 
     set +eu
