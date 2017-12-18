@@ -53,6 +53,8 @@ eval "$(rbenv init -)"
 
 # Setup paths
 export PATH=$HOME/bin:$PATH
+export PATH=$HOME/workspace/go/bin:$PATH
+export GOPATH=$HOME/workspace/go
 
 # Load Bash It
 source "$BASH_IT"/bash_it.sh
