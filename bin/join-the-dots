@@ -14,15 +14,11 @@ main() {
   copy_scripts
   ensure_brew_exists
   update_brew_things
-  setup_bash_it
-  setup_ruby
   setup_python
   update_luanvim
   update_tmux_plugins
   ensure_git_config_set
-  setup_gcloud
   update_go_tools
-  setup_yq
 }
 
 bump_homebrew_group_permissions() {
@@ -63,59 +59,21 @@ update_brew_things() {
   (cd && brew bundle -v)
 }
 
-setup_ruby() {
-    echo "Setting up ruby..."
-
-    if ! rbenv versions | grep -q 2.4.1; then
-      rbenv install 2.4.1
-    fi
-    rbenv global 2.4.1
-}
-
-setup_bash_it() {
-    echo "Setting up bash-it..."
-    if [ ! -d "${HOME}/.bash_it" ]; then
-      git clone https://github.com/Bash-it/bash-it.git "${HOME}/.bash_it"
-    fi
-
-    "${HOME}/.bash_it/install.sh" --silent
-    mv ~/.bash_profile.bak ~/.bash_profile
-    # ln -F -s ~/bin/git_prompt_info ~/.bash_it/custom/git_prompt_info.bash
-
-    set +eu
-    # shellcheck disable=1090
-    source "${HOME}/.bash_it/bash_it.sh"
-
-    # Enable bash-it aliases
-    aliases=(git general tmux homebrew)
-    for a in "${aliases[@]}"; do
-      bash-it enable alias "$a"
-    done
-
-    # Enable bash-it completions
-    completions=(brew docker docker-machine git)
-    for c in "${completions[@]}"; do
-      bash-it enable completion "$c"
-    done
-    set -eu
-}
-
 update_luanvim() {
   echo "Ensuring that we have neovim python plugins"
-  unset PYTHONPATH
   pip3 install --upgrade neovim
-  pip3 install --upgrade neovim
-  gem install neovim
+  npm install -g neovim
+  gem install neovim --user-install
+
   echo "Updating luanvim..."
-  if [[ ! -d "${HOME}/.vim" ]] ; then
-    git clone https://github.com/luan/vimfiles.git ~/.vim
+  if [[ -L ${HOME}/.config/nvim ]]; then
+    rm -rf ~/.config/nvim
   fi
-  (
-    cd "${HOME}/.vim"
-    git checkout master
-    git pull -r
-    ./update
-  )
+  if [[ ! -d "${HOME}/.config/nvim" ]] ; then
+    git clone https://github.com/alex-slynko/nvim ~/.config/nvim
+  fi
+  nvim -c "UpdateRemotePlugins | PlugInstall | PlugUpdate | qa"
+  cp after.vim ~/.config/nvim/user/after.vim
 }
 
 update_tmux_plugins() {
@@ -175,16 +133,6 @@ update_go_tools() {
     done
 
     gometalinter --install
-}
-
-setup_yq() {
-  pip3 install pyYAML
-  pip3 install yq
-
-  # Force deletion of old yq (the one from a ramdom gist :|)
-  if [[ -e "$HOME/bin/yq" ]] ; then
-    rm "$HOME/bin/yq"
-  fi
 }
 
 setup_python() {
