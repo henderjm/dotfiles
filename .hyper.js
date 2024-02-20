@@ -4,13 +4,14 @@
 // See https://hyper.is#cfg for all currently supported options.
 module.exports = {
     config: {
+        scrollback: 9999,
         // choose either `'stable'` for receiving highly polished,
         // or `'canary'` for less polished but more frequent updates
         updateChannel: 'stable',
         // default font size in pixels for all tabs
-        fontSize: 14,
+        fontSize: 12,
         // font family with optional fallbacks
-        fontFamily: '"Meslo LG S for Powerline", "FiraCode Nerd Font", "Fira Code", Menlo, "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
+        fontFamily: '"FiraCode Nerd Font", Menlo, "DejaVu Sans Mono", Consolas, "Lucida Console", monospace',
         // default font weight: 'normal' or 'bold'
         fontWeight: 'normal',
         // font weight for bold characters: 'normal' or 'bold'
@@ -125,11 +126,38 @@ module.exports = {
         disableLigatures: false,
         // set to true to disable auto updates
         disableAutoUpdates: false,
-        // set to true to enable screen reading apps (like NVDA) to read the contents of the terminal
-        screenReaderMode: false,
-        // set to true to preserve working directory when creating splits or tabs
-        preserveCWD: true,
         // for advanced config flags please refer to https://hyper.is/#cfg
+        paneNavigation: {
+            hotkeys: {
+                navigation: {
+                    up: 'ctrl+alt+up',
+                    down: 'ctrl+alt+down',
+                    left: 'ctrl+alt+left',
+                    right: 'ctrl+alt+right'
+                },
+                jump_prefix: 'ctrl+alt', // completed with 1-9 digits
+                permutation_modifier: 'shift', // Added to jump and navigation hotkeys for pane permutation
+                maximize: 'meta+return'
+            },
+            focusOnMouseHover: false,
+            inactivePaneOpacity: 0.8 // Set to 1 to disable inactive panes dimming
+        },
+        hyperline: {                                                                 
+            plugins: [                                                                 
+              "ip",                                                                    
+              "cpu", 
+              "memory",                                                              
+            ]                                                                          
+        },
+        pokemon: ['moltres', 'mewtwo', 'mew'],
+        unibody: 'true', // Choose the color of the window header
+        poketab: 'false', // Deactivate your theme's poketab
+
+        modifierKeys: { altIsMeta: true },
+        verminal: {
+            fontFamily: '"FiraCode Nerd Font"',
+            fontSize: 14
+        },
     },
     // a list of plugins to fetch and install from npm
     // format: [@org/]project[#version]
@@ -137,7 +165,8 @@ module.exports = {
     //   `hyperpower`
     //   `@company/project`
     //   `project#1.0.1`
-    plugins: ["hyperpower", "hyperterm-cobalt2-theme"],
+    //plugins: ["hyper-pane", "verminal", "hyper-background"],
+    plugins: ["hyperline", "verminal", "hyper-pokemon"],
     // in development, you can create a directory under
     // `~/.hyper_plugins/local/` and include it here
     // to load it and avoid it being `npm install`ed
