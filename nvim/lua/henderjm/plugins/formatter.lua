@@ -5,6 +5,7 @@ return {
         local formatters = require("format-on-save.formatters")
 
         format_on_save.setup({
+            stderr_loglevel = vim.log.levels.OFF,
             exclude_path_patterns = {
                 "/node_modules/",
                 ".local/share/nvim/lazy",
@@ -44,7 +45,6 @@ return {
                 }),
                 python = {
                     formatters.remove_trailing_whitespace,
-                    formatters.shell({ cmd = "tidy-imports" }),
                     formatters.black,
                     formatters.ruff,
                 },

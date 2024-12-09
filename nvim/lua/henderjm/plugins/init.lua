@@ -12,4 +12,5 @@ return {
     "preservim/nerdcommenter",
     "folke/zen-mode.nvim",
     "github/copilot.vim",
+    "hrsh7th/nvim-cmp",
 }

@@ -4,29 +4,30 @@ return {
     branch = 'v3.x',
     dependencies = {
         --- Uncomment these if you want to manage LSP servers from neovim
-        {'williamboman/mason.nvim'},
-        {'williamboman/mason-lspconfig.nvim'},
+        { 'williamboman/mason.nvim' },
+        { 'williamboman/mason-lspconfig.nvim' },
 
         -- LSP Support
-        {'neovim/nvim-lspconfig'},
+        { 'neovim/nvim-lspconfig' },
         -- Autocompletion
-        {'hrsh7th/nvim-cmp'},
-        {'hrsh7th/cmp-nvim-lsp'},
-        {'L3MON4D3/LuaSnip'},
-        {"mfussenegger/nvim-dap"},
-        {"jay-babu/mason-nvim-dap.nvim"},
-        {'leoluz/nvim-dap-go'},
-        {'rcarriga/nvim-dap-ui'},
-        {'j-hui/fidget.nvim'},
-        {'nvim-telescope/telescope-dap.nvim'},
-        {'ray-x/guihua.lua'},
-        {'neovim/nvim-lspconfig'},
-        {'nvim-treesitter/nvim-treesitter'},
+        { 'hrsh7th/nvim-cmp' },
+        { 'hrsh7th/cmp-nvim-lsp' },
+        { 'L3MON4D3/LuaSnip' },
+        { "mfussenegger/nvim-dap" },
+        { "jay-babu/mason-nvim-dap.nvim" },
+        { 'leoluz/nvim-dap-go' },
+        { 'nvim-neotest/nvim-nio' },
+        { 'rcarriga/nvim-dap-ui' },
+        { 'j-hui/fidget.nvim' },
+        { 'nvim-telescope/telescope-dap.nvim' },
+        { 'ray-x/guihua.lua' },
+        { 'neovim/nvim-lspconfig' },
+        { 'nvim-treesitter/nvim-treesitter' },
     },
 
-        --event = {"CmdlineEnter"},
-        --ft = {"go", 'gomod'},
-        --build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+    --event = {"CmdlineEnter"},
+    --ft = {"go", 'gomod'},
+    --build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
     vim.keymap.set("n", "<leader>dc", ":DapContinue<CR>"),
     vim.keymap.set("n", "<F5>", ":DapStepInto<CR>"),
     vim.keymap.set("n", "<F6>", ":DapStepOut<CR>"),
@@ -41,8 +42,8 @@ return {
         lsp_zero.preset("recommended")
 
         lsp_zero.on_attach(function(client, bufnr)
-            local opts = {buffer = bufnr, remap = false}
-            lsp_zero.default_keymaps({buffer = bufnr})
+            local opts = { buffer = bufnr, remap = false }
+            lsp_zero.default_keymaps({ buffer = bufnr })
             vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
             vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
             vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, opts)
@@ -58,7 +59,7 @@ return {
         --require("go").setup()
         require('mason').setup({})
         require('mason-lspconfig').setup({
-            ensure_installed = {'gopls', 'eslint', 'lua_ls', 'bashls', 'rust_analyzer'},
+            ensure_installed = { 'gopls', 'eslint', 'lua_ls', 'bashls', 'rust_analyzer', 'tflint' },
             handlers = {
                 lsp_zero.default_setup,
                 lua_ls = function()
@@ -88,31 +89,31 @@ return {
 
         --local lspconfig = require("lspconfig")
         --lspconfig.gopls.setup {
-            --on_attach = on_attach,
-            --capabilities = capabilities,
-            --cmd = {"gopls"},
-            --filetypes = { "go", "gomod", "gowork", "gotmpl" },
-            --settings = {
-                --gopls = {
-                    --completeUnimported = true,
-                    --usePlaceholders = true,
-                    --analyses = {
-                        --unusedparams = true,
-                    --},
-                --},
-            --},
+        --on_attach = on_attach,
+        --capabilities = capabilities,
+        --cmd = {"gopls"},
+        --filetypes = { "go", "gomod", "gowork", "gotmpl" },
+        --settings = {
+        --gopls = {
+        --completeUnimported = true,
+        --usePlaceholders = true,
+        --analyses = {
+        --unusedparams = true,
+        --},
+        --},
+        --},
         --}
 
 
         local cmp = require('cmp')
-        local cmp_select = {behavior = cmp.SelectBehavior.Select}
+        local cmp_select = { behavior = cmp.SelectBehavior.Select }
 
         cmp.setup({
             sources = {
-                {name = 'path'},
-                {name = 'nvim_lsp'},
-                {name = 'luasnip', keyword_length = 2},
-                {name = 'buffer', keyword_length = 3},
+                { name = 'path' },
+                { name = 'nvim_lsp' },
+                { name = 'luasnip', keyword_length = 2 },
+                { name = 'buffer',  keyword_length = 3 },
             },
             formatting = lsp_zero.cmp_format(),
             mapping = cmp.mapping.preset.insert({

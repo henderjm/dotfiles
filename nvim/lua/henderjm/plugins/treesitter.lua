@@ -4,12 +4,12 @@ return {
     "nvim-treesitter/nvim-treesitter",
     cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
     keys = {
-      { "<c-space>", desc = "Increment selection" },
-      { "<bs>", desc = "Decrement selection", mode = "x" },
+        { "<c-space>", desc = "Increment selection" },
+        { "<bs>",      desc = "Decrement selection", mode = "x" },
     },
     config = function()
         require("nvim-treesitter.configs").setup({
-            ensure_installed = { "javascript", "rust", "go", "lua", "vim", "vimdoc", "query" },
+            ensure_installed = { "bash", "javascript", "rust", "go", "lua", "vim", "vimdoc", "query" },
 
             -- Install parsers synchronously (only applied to `ensure_installed`)
             sync_install = false,
@@ -30,4 +30,3 @@ return {
         })
     end,
 }
-
